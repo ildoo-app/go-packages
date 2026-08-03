@@ -1,4 +1,4 @@
-module github.com/ildoo/go-packages
+module github.com/ildoo-app/go-packages
 
 go 1.26.5
 
