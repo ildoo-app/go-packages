@@ -16,7 +16,7 @@ type DB struct {
 
 // New creates a pgx connection pool, pings it, and returns the ready handle.
 // The caller owns the DB and must Close it on shutdown.
-func New(ctx context.Context, cfg *Config) (*DB, error) {
+func New(ctx context.Context, cfg *Config) (DBTX, error) {
 	if err := cfg.validate(); err != nil {
 		return nil, err
 	}
