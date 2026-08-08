@@ -41,34 +41,6 @@ func New(ctx context.Context, cfg *Config) (*Client, error) {
 	return client, nil
 }
 
-func (c *Config) options() (*goredis.Options, error) {
-	var err error
-
-	opts := &goredis.Options{
-		Addr:     c.addr(),
-		Username: c.Username,
-		Password: c.Password,
-		DB:       c.DB,
-	}
-
-	if c.DSN != "" {
-		if opts, err = goredis.ParseURL(c.DSN); err != nil {
-			return nil, fmt.Errorf("redis: parse DSN: %w", err)
-		}
-	}
-
-	applyPoolSettings(opts, c)
-	return opts, nil
-}
-
-func applyPoolSettings(opts *goredis.Options, c *Config) {
-	opts.PoolSize = c.PoolSize
-	opts.MinIdleConns = c.MinIdleConns
-	opts.ConnMaxLifetime = c.ConnMaxLifetime
-	opts.ConnMaxIdleTime = c.ConnMaxIdleTime
-	opts.DialTimeout = c.ConnectTimeout
-}
-
 // Ping verifies the client can reach Redis within the context deadline.
 func (c *Client) Ping(ctx context.Context) error {
 	if c == nil || c.Client == nil {

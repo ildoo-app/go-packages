@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	goredis "github.com/redis/go-redis/v9"
 )
 
 const (
@@ -75,4 +77,32 @@ func (c *Config) withDefaults() {
 
 func (c *Config) addr() string {
 	return fmt.Sprintf("%s:%d", c.Host, c.Port)
+}
+
+func (c *Config) options() (*goredis.Options, error) {
+	var err error
+
+	opts := &goredis.Options{
+		Addr:     c.addr(),
+		Username: c.Username,
+		Password: c.Password,
+		DB:       c.DB,
+	}
+
+	if c.DSN != "" {
+		if opts, err = goredis.ParseURL(c.DSN); err != nil {
+			return nil, fmt.Errorf("redis: parse DSN: %w", err)
+		}
+	}
+
+	applyPoolSettings(opts, c)
+	return opts, nil
+}
+
+func applyPoolSettings(opts *goredis.Options, c *Config) {
+	opts.PoolSize = c.PoolSize
+	opts.MinIdleConns = c.MinIdleConns
+	opts.ConnMaxLifetime = c.ConnMaxLifetime
+	opts.ConnMaxIdleTime = c.ConnMaxIdleTime
+	opts.DialTimeout = c.ConnectTimeout
 }
