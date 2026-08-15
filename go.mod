@@ -3,6 +3,7 @@ module github.com/ildoo-app/go-packages
 go 1.26.5
 
 require (
+	connectrpc.com/connect v1.20.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/redis/go-redis/v9 v9.22.0
 )
@@ -16,4 +17,5 @@ require (
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 )
