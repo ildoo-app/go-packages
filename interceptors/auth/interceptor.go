@@ -87,7 +87,7 @@ func (i *Interceptor) authenticate(ctx context.Context, header string) (*Claims,
 	}
 
 	if tenantID, ok := tenant.FromContext(ctx); ok {
-		if claims.MerchantID == "" || claims.MerchantID != tenantID {
+		if claims.MerchantID == "" || claims.MerchantID != tenantID.String() {
 			return nil, connect.NewError(connect.CodePermissionDenied, errors.New("token tenant mismatch"))
 		}
 	}

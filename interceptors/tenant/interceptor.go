@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"connectrpc.com/connect"
+	"github.com/google/uuid"
 )
 
 // HeaderTenantID is the HTTP header carrying the tenant identifier.
@@ -50,11 +51,12 @@ func (i *Interceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc) co
 }
 
 func contextWithTenantID(ctx context.Context, tenantID string) (context.Context, error) {
-	if tenantID == "" {
+	id, err := uuid.Parse(tenantID)
+	if err != nil {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
-			errors.New("missing X-Tenant-ID header"),
+			errors.New("invalid or missing X-Tenant-ID header"),
 		)
 	}
-	return WithContext(ctx, tenantID), nil
+	return WithContext(ctx, id), nil
 }
