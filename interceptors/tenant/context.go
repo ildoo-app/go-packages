@@ -2,6 +2,7 @@ package tenant
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 )
@@ -14,10 +15,21 @@ func WithContext(ctx context.Context, tenantID uuid.UUID) context.Context {
 }
 
 // FromContext returns the tenant ID stored in ctx, if any.
-func FromContext(ctx context.Context) (uuid.UUID, bool) {
+func FromContext(ctx context.Context) (uuid.UUID, error) {
 	if ctx == nil {
-		return uuid.Nil, false
+		return uuid.Nil, errors.New("context is nil")
 	}
 	id, ok := ctx.Value(ctxKey{}).(uuid.UUID)
-	return id, ok && id != uuid.Nil
+	if !ok {
+		return uuid.Nil, errors.New("invalid or missing tenant ID in context")
+	}
+	return id, nil
+}
+
+func MustFromContext(ctx context.Context) uuid.UUID {
+	id, err := FromContext(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
 }

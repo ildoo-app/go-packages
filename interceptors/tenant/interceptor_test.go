@@ -18,9 +18,9 @@ func TestInterceptorUnaryExtractsTenantID(t *testing.T) {
 	interceptor := NewInterceptor()
 	var got uuid.UUID
 	next := connect.UnaryFunc(func(ctx context.Context, _ connect.AnyRequest) (connect.AnyResponse, error) {
-		id, ok := FromContext(ctx)
-		if !ok {
-			t.Fatal("expected tenant ID in handler context")
+		id, err := FromContext(ctx)
+		if err != nil {
+			t.Fatalf("expected tenant ID in handler context: %v", err)
 		}
 		got = id
 		return connect.NewResponse(&testMsg{}), nil
@@ -91,7 +91,7 @@ func TestInterceptorUnarySkipsClient(t *testing.T) {
 	called := false
 	next := connect.UnaryFunc(func(ctx context.Context, _ connect.AnyRequest) (connect.AnyResponse, error) {
 		called = true
-		if _, ok := FromContext(ctx); ok {
+		if _, err := FromContext(ctx); err == nil {
 			t.Fatal("client path should not inject tenant ID")
 		}
 		return connect.NewResponse(&testMsg{}), nil

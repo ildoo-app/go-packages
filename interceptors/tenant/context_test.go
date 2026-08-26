@@ -12,9 +12,9 @@ func TestWithContextAndFromContext(t *testing.T) {
 
 	id := uuid.MustParse("550e8400-e29b-41d4-a716-446655440000")
 	ctx := WithContext(context.Background(), id)
-	got, ok := FromContext(ctx)
-	if !ok {
-		t.Fatal("expected tenant ID in context")
+	got, err := FromContext(ctx)
+	if err != nil {
+		t.Fatalf("expected tenant ID in context: %v", err)
 	}
 	if got != id {
 		t.Fatalf("FromContext = %q, want %q", got, id)
@@ -24,13 +24,30 @@ func TestWithContextAndFromContext(t *testing.T) {
 func TestFromContextMissing(t *testing.T) {
 	t.Parallel()
 
-	if _, ok := FromContext(context.Background()); ok {
-		t.Fatal("expected no tenant ID")
+	if _, err := FromContext(context.Background()); err == nil {
+		t.Fatal("expected error when tenant ID is missing")
 	}
-	if _, ok := FromContext(nil); ok {
-		t.Fatal("expected no tenant ID for nil ctx")
+	if _, err := FromContext(nil); err == nil {
+		t.Fatal("expected error for nil ctx")
 	}
-	if _, ok := FromContext(WithContext(context.Background(), uuid.Nil)); ok {
-		t.Fatal("expected nil tenant ID to be treated as missing")
+}
+
+func TestMustFromContext(t *testing.T) {
+	t.Parallel()
+
+	id := uuid.MustParse("550e8400-e29b-41d4-a716-446655440000")
+	if got := MustFromContext(WithContext(context.Background(), id)); got != id {
+		t.Fatalf("MustFromContext = %q, want %q", got, id)
 	}
+}
+
+func TestMustFromContextPanics(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if recover() == nil {
+			t.Fatal("expected panic")
+		}
+	}()
+	MustFromContext(context.Background())
 }
