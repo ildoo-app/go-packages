@@ -38,17 +38,17 @@ func New(ctx context.Context, cfg *Config) (*DB, error) {
 	poolCfg.MaxConnIdleTime = cfg.MaxConnIdleTime
 	poolCfg.HealthCheckPeriod = cfg.HealthCheckPeriod
 
-	connectCtx, cancel := context.WithTimeout(ctx, cfg.ConnectTimeout)
-	defer cancel()
-
-	pool, err := pgxpool.NewWithConfig(connectCtx, poolCfg)
+	// Drop cancellation so MinConns prewarm can finish; values from ctx are kept.
+	pool, err := pgxpool.NewWithConfig(context.WithoutCancel(ctx), poolCfg)
 	if err != nil {
 		return nil, fmt.Errorf("postgres: create pool: %w", err)
 	}
 
 	db := &DB{Pool: pool}
 
-	if err := db.Ping(connectCtx); err != nil {
+	pingCtx, cancel := context.WithTimeout(ctx, cfg.ConnectTimeout)
+	defer cancel()
+	if err := db.Ping(pingCtx); err != nil {
 		db.Close()
 		return nil, err
 	}
